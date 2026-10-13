@@ -1,0 +1,3 @@
+[build]
+rustc = "/opt/homebrew/bin/rustc"
+rustdoc = "/opt/homebrew/bin/rustdoc"

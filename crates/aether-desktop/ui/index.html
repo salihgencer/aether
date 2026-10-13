@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aether (AuraMind) — Gemini 3.8 Flash AI Command Center & Sanctuary</title>
+  <style>
+    :root {
+      --obsidian-dark: #070D14;
+      --sky-blue: #0EA5E9;
+      --cyan-glow: #22D3EE;
+      --teal-calm: #14B8A6;
+      --mint-fresh: #2DD4BF;
+      --golden-amber: #F59E0B;
+      --card-surface: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(34, 211, 238, 0.18);
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --radius-card: 28px;
+      --radius-pill: 9999px;
+      --blur-frosted: 20px;
+      --shadow-glass: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--obsidian-dark);
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      padding: 28px 36px;
+    }
+
+    /* Ambient organic light orbs */
+    .ambient-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(110px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.35;
+      animation: floatOrb 14s ease-in-out infinite alternate;
+    }
+    .orb-1 {
+      width: 460px;
+      height: 460px;
+      background: radial-gradient(circle, var(--sky-blue), transparent 70%);
+      top: -120px;
+      left: -80px;
+    }
+    .orb-2 {
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, var(--teal-calm), transparent 70%);
+      bottom: -100px;
+      right: -60px;
+      animation-delay: -6s;
+    }
+
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(30px, 24px) scale(1.08); }
+    }
+
+    .app-shell {
+      position: relative;
+      z-index: 1;
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .glass-card {
+      background: var(--card-surface);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(var(--blur-frosted));
+      -webkit-backdrop-filter: blur(var(--blur-frosted));
+      box-shadow: var(--shadow-glass);
+      padding: 26px;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(34, 211, 238, 0.34);
+    }
+
+    header.topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-orb {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan-glow), var(--sky-blue), var(--teal-calm));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 24px rgba(34, 211, 238, 0.45);
+      font-size: 20px;
+    }
+
+    .brand h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand p {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+
+    .status-badges {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill-badge {
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+      background: rgba(14, 165, 233, 0.12);
+      border: 1px solid rgba(34, 211, 238, 0.28);
+      color: var(--cyan-glow);
+      font-size: 0.78rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-btn {
+      border-radius: var(--radius-pill);
+      background: var(--sky-blue);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      padding: 11px 22px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pill-btn:hover {
+      background: var(--cyan-glow);
+      color: var(--obsidian-dark);
+      box-shadow: 0 0 22px rgba(34, 211, 238, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .pill-btn.secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-primary);
+      border: 1px solid var(--card-border);
+    }
+
+    .pill-btn.secondary:hover {
+      background: rgba(34, 211, 238, 0.15);
+      color: var(--cyan-glow);
+    }
+
+    .grid-main {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 960px) {
+      .grid-main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-primary);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: rgba(7, 13, 20, 0.65);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-pill);
+      padding: 12px 20px;
+      color: var(--text-primary);
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--cyan-glow);
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
+    }
+
+    .ai-response-box {
+      background: rgba(7, 13, 20, 0.55);
+      border: 1px solid rgba(34, 211, 238, 0.16);
+      border-radius: 22px;
+      padding: 20px;
+      min-height: 150px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      line-height: 1.6;
+    }
+
+    .ai-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      color: var(--mint-fresh);
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      padding-top: 10px;
+    }
+
+    .freq-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .freq-btn {
+      padding: 12px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+    }
+
+    .freq-btn.active, .freq-btn:hover {
+      background: rgba(14, 165, 233, 0.16);
+      border-color: var(--cyan-glow);
+    }
+
+    .freq-hz {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--cyan-glow);
+    }
+
+    .freq-desc {
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .memory-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 240px;
+      overflow-y: auto;
+      margin-top: 12px;
+    }
+
+    .memory-item {
+      background: rgba(7, 13, 20, 0.5);
+      border: 1px solid rgba(34, 211, 238, 0.14);
+      border-radius: 18px;
+      padding: 12px 16px;
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .memory-tags {
+      margin-top: 6px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag-chip {
+      font-size: 0.7rem;
+      padding: 2px 9px;
+      border-radius: var(--radius-pill);
+      background: rgba(20, 184, 166, 0.16);
+      color: var(--mint-fresh);
+    }
+
+    .sanctuary-ring-wrap {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin: 14px 0;
+    }
+
+    .ring-svg {
+      width: 96px;
+      height: 96px;
+      flex-shrink: 0;
+    }
+
+    .sanctuary-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-orb orb-1"></div>
+  <div class="ambient-orb orb-2"></div>
+
+  <div class="app-shell">
+    <!-- Top Frosted Glass Bar -->
+    <header class="glass-card topbar">
+      <div class="brand">
+        <div class="brand-orb">🌌</div>
+        <div>
+          <h1>Aether (AuraMind)</h1>
+          <p>Zihnine Berraklık, Akışına Dinginlik • Rust &amp; Tauri v2 AI Sanctuary</p>
+        </div>
+      </div>
+      <div class="status-badges">
+        <span class="pill-badge" id="modelBadge">⚡ gemini-3.8-flash</span>
+        <span class="pill-badge">🛡️ Sıfır-Suçluluk Aktif</span>
+        <button class="pill-btn secondary" onclick="playCrystalChime()">🔔 1760 Hz Kristal Çınlama</button>
+      </div>
+    </header>
+
+    <div class="grid-main">
+      <!-- Left Column: Gemini 3.8 Flash Command Center & Vector Memory -->
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+        <section class="glass-card">
+          <div class="section-title">
+            <span>🧠 Gemini 3.8 Flash Komut Merkezi</span>
+            <span style="font-size: 0.78rem; color: var(--text-secondary);">⌘K Hızlı Odak</span>
+          </div>
+          <div class="input-row">
+            <input
+              type="text"
+              id="promptInput"
+              placeholder="Aether'e sor veya düşünceni paylaş (Örn: Bugün Rust mimarisine nasıl dingin odaklanabilirim?)..."
+              onkeydown="if(event.key==='Enter') askAether()"
+            />
+            <button class="pill-btn" onclick="askAether()">✨ Gönder</button>
+          </div>
+          <div class="ai-response-box">
+            <div id="aiReplyText">
+              Hoş geldin. Aether'in koyu buzlu cam mabedindesin. Düşüncelerini paylaşabilir, hafıza kasanda semantik arama yapabilir veya 432 Hz / 528 Hz harmonik odak akışını başlatabilirsin.
+            </div>
+            <div class="ai-meta">
+              <span id="aiActionSuggestion">💡 Öneri: 432 Hz Berraklık akışıyla başla</span>
+              <span id="aiModelMeta">Model: gemini-3.8-flash • 0 ms</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Semantic Vector Memory Vault -->
+        <section class="glass-card">
+          <div class="section-title">
+            <span>💎 Yerel Vektör Hafıza Kasası (Cosine Similarity)</span>
+            <span id="memoryCountBadge" class="pill-badge">3 Kayıt</span>
+          </div>
+          <div class="input-row">
+            <input
+              type="text"
+              id="memoryInput"
+              placeholder="Yeni not ekle veya semantik ara..."
+              onkeydown="if(event.key==='Enter') searchMemory()"
+            />
+            <button class="pill-btn secondary" onclick="searchMemory()">🔍 Ara</button>
+            <button class="pill-btn" onclick="addMemory()">＋ Kaydet</button>
+          </div>
+          <div class="memory-list" id="memoryList"></div>
+        </section>
+      </div>
+
+      <!-- Right Column: Zero-Guilt Focus Sanctuary & Harmonic Audio Engine -->
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+        <section class="glass-card">
+          <div class="section-title">
+            <span>💧 Sıfır-Suçluluk Odak &amp; Öz-Bakım Mabedi</span>
+            <span class="pill-badge" id="sanctuaryStateBadge">🌙 Dinlenme Modu</span>
+          </div>
+
+          <div class="sanctuary-ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" stroke="rgba(34,211,238,0.15)" stroke-width="7" fill="none" />
+              <circle
+                id="progressCircle"
+                cx="50"
+                cy="50"
+                r="42"
+                stroke="#22D3EE"
+                stroke-width="7"
+                fill="none"
+                stroke-linecap="round"
+                stroke-dasharray="264"
+                stroke-dashoffset="180"
+                transform="rotate(-90 50 50)"
+              />
+              <text x="50" y="55" text-anchor="middle" fill="#F8FAFC" font-size="16" font-weight="700" id="ringText">
+                25 dk
+              </text>
+            </svg>
+            <div>
+              <div style="font-weight: 600; font-size: 0.98rem; margin-bottom: 6px;" id="sanctuaryIntention">
+                Zihnine Berraklık, Akışına Dinginlik
+              </div>
+              <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5;" id="sanctuaryMessage">
+                Dingin mabedin hazır. Ne zaman istersen 432 Hz akışını başlatabilirsin.
+              </p>
+            </div>
+          </div>
+
+          <div class="sanctuary-actions">
+            <button class="pill-btn" onclick="startSanctuaryFlow()">🌊 Akışı Başlat (+5 dk)</button>
+            <button class="pill-btn secondary" onclick="restSanctuary()">🌙 Dinlenme Modu</button>
+            <button class="pill-btn secondary" onclick="addHydration()">💧 +150 ml Can Suyu (<span id="hydrationValue">250</span> ml)</button>
+          </div>
+        </section>
+
+        <!-- Harmonic Ambient Frequency Generator -->
+        <section class="glass-card">
+          <div class="section-title">
+            <span>🎵 Harmonik Ses &amp; Frekans Sentezleyici</span>
+            <span class="pill-badge" id="activeFreqBadge">432 Hz</span>
+          </div>
+          <p style="font-size: 0.83rem; color: var(--text-secondary);">
+            Saf sinüs ve harmonik üst-ton sentezi. Seçtiğin frekansı canlı dinleyebilir veya Rust PCM WAV motoruyla indirebilirsin.
+          </p>
+          <div class="freq-grid">
+            <button class="freq-btn active" onclick="toggleAmbient(432, this)">
+              <div class="freq-hz">432 Hz</div>
+              <div class="freq-desc">Doğa &amp; Derin Kodlama Berraklığı</div>
+            </button>
+            <button class="freq-btn" onclick="toggleAmbient(528, this)">
+              <div class="freq-hz">528 Hz</div>
+              <div class="freq-desc">Yaratıcı Çiçeklenme &amp; Canlılık</div>
+            </button>
+            <button class="freq-btn" onclick="toggleAmbient(320, this)">
+              <div class="freq-hz">320 Hz</div>
+              <div class="freq-desc">Dingin Nefes &amp; Zihin Dengesi</div>
+            </button>
+            <button class="freq-btn" onclick="toggleAmbient(174, this)">
+              <div class="freq-hz">174 Hz</div>
+              <div class="freq-desc">Temel Huzur &amp; Gevşeme</div>
+            </button>
+          </div>
+          <div style="margin-top: 14px; display: flex; justify-content: space-between; align-items: center;">
+            <button class="pill-btn secondary" id="muteToggleBtn" onclick="stopAmbient()">🔇 Ortam Sesini Durdur</button>
+            <a href="/api/audio/wav?hz=1760" download="aether_crystal_1760hz.wav" style="color: var(--cyan-glow); font-size: 0.8rem; text-decoration: none;">
+              ⬇ Rust 16-Bit WAV İndir
+            </a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentHz = 432;
+    let audioCtx = null;
+    let ambientOsc = null;
+    let ambientGain = null;
+
+    function ensureAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playCrystalChime() {
+      ensureAudio();
+      const now = audioCtx.currentTime;
+      [1760, 2637].forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(idx === 0 ? 0.18 : 0.08, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 1.15);
+      });
+    }
+
+    function toggleAmbient(hz, btnEl) {
+      currentHz = hz;
+      document.getElementById('activeFreqBadge').textContent = hz + ' Hz';
+      document.querySelectorAll('.freq-btn').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+
+      ensureAudio();
+      stopAmbient();
+
+      const now = audioCtx.currentTime;
+      ambientOsc = audioCtx.createOscillator();
+      ambientGain = audioCtx.createGain();
+      ambientOsc.type = 'sine';
+      ambientOsc.frequency.setValueAtTime(hz, now);
+      ambientGain.gain.setValueAtTime(0.001, now);
+      ambientGain.gain.exponentialRampToValueAtTime(0.06, now + 0.4);
+      ambientOsc.connect(ambientGain);
+      ambientGain.connect(audioCtx.destination);
+      ambientOsc.start(now);
+    }
+
+    function stopAmbient() {
+      if (ambientOsc) {
+        try { ambientOsc.stop(); } catch (_) {}
+        ambientOsc = null;
+      }
+    }
+
+    async function askAether() {
+      const input = document.getElementById('promptInput');
+      const prompt = input.value.trim();
+      if (!prompt) return;
+      playCrystalChime();
+
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, harmonic_hz: currentHz })
+      });
+      const data = await res.json();
+      document.getElementById('aiReplyText').textContent = data.reply;
+      document.getElementById('aiActionSuggestion').textContent = '✨ ' + data.action_suggestion;
+      document.getElementById('aiModelMeta').textContent =
+        `Model: ${data.model_used} • ${data.latency_ms} ms • Sıfır-Suçluluk ✓`;
+    }
+
+    async function loadMemories() {
+      const res = await fetch('/api/memory');
+      const entries = await res.json();
+      renderMemories(entries.map(entry => ({ entry, similarity: 1.0 })));
+    }
+
+    async function searchMemory() {
+      const q = document.getElementById('memoryInput').value.trim();
+      if (!q) return loadMemories();
+      const res = await fetch('/api/memory/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q, top_k: 5 })
+      });
+      const scored = await res.json();
+      renderMemories(scored);
+    }
+
+    async function addMemory() {
+      const input = document.getElementById('memoryInput');
+      const content = input.value.trim();
+      if (!content) return;
+      playCrystalChime();
+      await fetch('/api/memory/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, tags: ['aether', 'sanctuary'] })
+      });
+      input.value = '';
+      await loadMemories();
+    }
+
+    function renderMemories(list) {
+      document.getElementById('memoryCountBadge').textContent = `${list.length} Kayıt`;
+      const container = document.getElementById('memoryList');
+      container.innerHTML = list.map(item => `
+        <div class="memory-item">
+          <div>${item.entry.content}</div>
+          <div class="memory-tags">
+            <span class="tag-chip">Benzerlik: ${(item.similarity * 100).toFixed(0)}%</span>
+            ${(item.entry.tags || []).map(t => `<span class="tag-chip">#${t}</span>`).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function startSanctuaryFlow() {
+      playCrystalChime();
+      const res = await fetch('/api/focus/flow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ minutes: 5, hz: currentHz })
+      });
+      updateSanctuaryUI(await res.json());
+    }
+
+    async function restSanctuary() {
+      playCrystalChime();
+      const res = await fetch('/api/focus/rest', { method: 'POST' });
+      updateSanctuaryUI(await res.json());
+    }
+
+    async function addHydration() {
+      playCrystalChime();
+      const res = await fetch('/api/focus/hydrate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ml: 150 })
+      });
+      updateSanctuaryUI(await res.json());
+    }
+
+    function updateSanctuaryUI(s) {
+      const stateMap = {
+        Resting: '🌙 Dinlenme Modu',
+        Flowing: '🌊 Akış Halinde',
+        Blooming: '✨ Çiçeklenme'
+      };
+      document.getElementById('sanctuaryStateBadge').textContent = stateMap[s.state] || s.state;
+      document.getElementById('sanctuaryIntention').textContent = s.intention;
+      document.getElementById('sanctuaryMessage').textContent = s.compassionate_message;
+      document.getElementById('hydrationValue').textContent = s.hydration_ml;
+      document.getElementById('ringText').textContent = `${s.completed_minutes}/${s.target_minutes}dk`;
+      const ratio = Math.min(1, s.completed_minutes / Math.max(1, s.target_minutes));
+      document.getElementById('progressCircle').setAttribute('stroke-dashoffset', String(264 * (1 - ratio)));
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        document.getElementById('promptInput').focus();
+      }
+    });
+
+    loadMemories();
+  </script>
+</body>
+</html>
