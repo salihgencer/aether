@@ -1,8 +1,9 @@
 //! `aether-desktop` — Tauri v2 / Axum Dark Frosted Glassmorphic Desktop App & IPC Server.
 
 use aether_core::{
-    AetherDesignTokens, AetherPromptRequest, FocusSanctuary, GeminiClient, HarmonicPreset,
-    HarmonicSynthesizer, MemoryEntry, MemoryVault, ScoredMemory,
+    AetherDesignTokens, AetherPromptRequest, CroBenchmarkEngine, CroComparisonReport,
+    FocusSanctuary, GeminiClient, HarmonicPreset, HarmonicSynthesizer, MemoryEntry, MemoryVault,
+    ScoredMemory,
 };
 use axum::{
     Json, Router,
@@ -55,6 +56,12 @@ pub struct AskPayload {
 }
 
 #[derive(Deserialize)]
+pub struct CroBenchmarkPayload {
+    pub my_page_copy: Option<String>,
+    pub my_url: Option<String>,
+}
+
+#[derive(Deserialize)]
 pub struct MemorySearchPayload {
     pub query: String,
     pub top_k: Option<usize>,
@@ -87,6 +94,7 @@ pub fn build_router(state: AppState) -> Router {
         .route("/", get(index_handler))
         .route("/api/tokens", get(tokens_handler))
         .route("/api/ask", post(ask_handler))
+        .route("/api/cro/benchmark", post(cro_benchmark_handler))
         .route("/api/memory", get(memory_list_handler))
         .route("/api/memory/search", post(memory_search_handler))
         .route("/api/memory/add", post(memory_add_handler))
@@ -128,6 +136,27 @@ async fn ask_handler(
         .await;
 
     Json(resp)
+}
+
+async fn cro_benchmark_handler(
+    State(state): State<AppState>,
+    Json(payload): Json<CroBenchmarkPayload>,
+) -> Json<CroComparisonReport> {
+    let engine = CroBenchmarkEngine::new(state.gemini.clone());
+    let mut candidates = CroBenchmarkEngine::default_hosting_candidates();
+    if let Some(mine) = candidates.iter_mut().find(|c| c.is_mine) {
+        if let Some(copy) = payload.my_page_copy
+            && !copy.trim().is_empty()
+        {
+            mine.page_content = copy;
+        }
+        if let Some(url) = payload.my_url
+            && !url.trim().is_empty()
+        {
+            mine.url = url;
+        }
+    }
+    Json(engine.compare_all(&candidates).await)
 }
 
 async fn memory_list_handler(State(state): State<AppState>) -> Json<Vec<MemoryEntry>> {
@@ -224,5 +253,6 @@ mod tests {
         assert!(INDEX_HTML.contains("#070D14"));
         assert!(INDEX_HTML.contains("gemini-3.8-flash"));
         assert!(INDEX_HTML.contains("backdrop-filter: blur("));
+        assert!(INDEX_HTML.contains("/api/cro/benchmark"));
     }
 }

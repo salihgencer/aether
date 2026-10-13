@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aether (AuraMind) — Gemini 3.8 Flash AI Command Center & Sanctuary</title>
+  <title>Aether (AuraMind) — Gemini 3.8 Flash AI Command Center &amp; CRO Benchmark Studio</title>
   <style>
     :root {
       --obsidian-dark: #070D14;
@@ -38,7 +38,6 @@
       padding: 28px 36px;
     }
 
-    /* Ambient organic light orbs */
     .ambient-orb {
       position: fixed;
       border-radius: 50%;
@@ -290,7 +289,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      max-height: 240px;
+      max-height: 220px;
       overflow-y: auto;
       margin-top: 12px;
     }
@@ -338,6 +337,45 @@
       flex-wrap: wrap;
       margin-top: 12px;
     }
+
+    .cro-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .cro-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .cro-card {
+      background: rgba(7, 13, 20, 0.6);
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      border-radius: 20px;
+      padding: 16px;
+    }
+
+    .cro-card.mine {
+      border-color: var(--golden-amber);
+      box-shadow: 0 0 24px rgba(245, 158, 11, 0.14);
+    }
+
+    .score-bar-track {
+      height: 8px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 8px 0 12px 0;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, var(--sky-blue), var(--cyan-glow), var(--mint-fresh));
+    }
   </style>
 </head>
 <body>
@@ -351,15 +389,34 @@
         <div class="brand-orb">🌌</div>
         <div>
           <h1>Aether (AuraMind)</h1>
-          <p>Zihnine Berraklık, Akışına Dinginlik • Rust &amp; Tauri v2 AI Sanctuary</p>
+          <p>Zihnine Berraklık, Akışına Dinginlik • Rust &amp; Tauri v2 AI &amp; CRO Sanctuary</p>
         </div>
       </div>
       <div class="status-badges">
         <span class="pill-badge" id="modelBadge">⚡ gemini-3.8-flash</span>
-        <span class="pill-badge">🛡️ Sıfır-Suçluluk Aktif</span>
+        <span class="pill-badge">🏆 MECLABS • CXL • StoryBrand</span>
         <button class="pill-btn secondary" onclick="playCrystalChime()">🔔 1760 Hz Kristal Çınlama</button>
       </div>
     </header>
+
+    <!-- Full-Width CRO & Competitor Hosting Benchmark Studio -->
+    <section class="glass-card">
+      <div class="section-title">
+        <span>🏆 Rakip &amp; Hosting Sayfası CRO Karşılaştırma Stüdyosu (MECLABS LIFT • CXL • StoryBrand • Fiyat Psikolojisi)</span>
+        <span class="pill-badge" id="croSummaryBadge">100 Puanlık Rubrik</span>
+      </div>
+      <div class="input-row">
+        <input
+          type="text"
+          id="croMyCopyInput"
+          placeholder="Senin hosting sayfanın metnini veya değer önerisini yaz (Boş bırakırsan varsayılan taslağı Kinsta &amp; Hostinger ile kıyaslar)..."
+          onkeydown="if(event.key==='Enter') runCroBenchmark()"
+        />
+        <button class="pill-btn" onclick="runCroBenchmark()">🚀 Rakiplerle Skorla &amp; Karşılaştır</button>
+      </div>
+      <div id="croExecutiveBox" style="font-size: 0.88rem; color: var(--mint-fresh); margin-bottom: 10px;"></div>
+      <div class="cro-grid" id="croResultsGrid"></div>
+    </section>
 
     <div class="grid-main">
       <!-- Left Column: Gemini 3.8 Flash Command Center & Vector Memory -->
@@ -373,14 +430,14 @@
             <input
               type="text"
               id="promptInput"
-              placeholder="Aether'e sor veya düşünceni paylaş (Örn: Bugün Rust mimarisine nasıl dingin odaklanabilirim?)..."
+              placeholder="Aether'e sor veya düşünceni paylaş..."
               onkeydown="if(event.key==='Enter') askAether()"
             />
             <button class="pill-btn" onclick="askAether()">✨ Gönder</button>
           </div>
           <div class="ai-response-box">
             <div id="aiReplyText">
-              Hoş geldin. Aether'in koyu buzlu cam mabedindesin. Düşüncelerini paylaşabilir, hafıza kasanda semantik arama yapabilir veya 432 Hz / 528 Hz harmonik odak akışını başlatabilirsin.
+              Hoş geldin. Üstteki CRO Stüdyosu ile hosting sayfanı rakiplerle skorlayabilir veya Gemini 3.8 Flash asistanına pazarlama ve mimari sorularını yöneltebilirsin.
             </div>
             <div class="ai-meta">
               <span id="aiActionSuggestion">💡 Öneri: 432 Hz Berraklık akışıyla başla</span>
@@ -460,9 +517,6 @@
             <span>🎵 Harmonik Ses &amp; Frekans Sentezleyici</span>
             <span class="pill-badge" id="activeFreqBadge">432 Hz</span>
           </div>
-          <p style="font-size: 0.83rem; color: var(--text-secondary);">
-            Saf sinüs ve harmonik üst-ton sentezi. Seçtiğin frekansı canlı dinleyebilir veya Rust PCM WAV motoruyla indirebilirsin.
-          </p>
           <div class="freq-grid">
             <button class="freq-btn active" onclick="toggleAmbient(432, this)">
               <div class="freq-hz">432 Hz</div>
@@ -482,7 +536,7 @@
             </button>
           </div>
           <div style="margin-top: 14px; display: flex; justify-content: space-between; align-items: center;">
-            <button class="pill-btn secondary" id="muteToggleBtn" onclick="stopAmbient()">🔇 Ortam Sesini Durdur</button>
+            <button class="pill-btn secondary" onclick="stopAmbient()">🔇 Ortam Sesini Durdur</button>
             <a href="/api/audio/wav?hz=1760" download="aether_crystal_1760hz.wav" style="color: var(--cyan-glow); font-size: 0.8rem; text-decoration: none;">
               ⬇ Rust 16-Bit WAV İndir
             </a>
@@ -551,6 +605,39 @@
         try { ambientOsc.stop(); } catch (_) {}
         ambientOsc = null;
       }
+    }
+
+    async function runCroBenchmark() {
+      const myCopy = document.getElementById('croMyCopyInput').value.trim();
+      const res = await fetch('/api/cro/benchmark', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ my_page_copy: myCopy || null })
+      });
+      const report = await res.json();
+      document.getElementById('croSummaryBadge').textContent =
+        `Senin Skorun: ${report.your_score}/100 (#${report.your_rank})`;
+      document.getElementById('croExecutiveBox').textContent = '🧠 ' + report.llm_executive_summary;
+
+      const grid = document.getElementById('croResultsGrid');
+      grid.innerHTML = report.evaluations.map((ev, idx) => `
+        <div class="cro-card ${ev.is_mine ? 'mine' : ''}">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>#${idx + 1} ${ev.name}</strong>
+            <span class="pill-badge">${ev.total_score}/100 • ${ev.grade}</span>
+          </div>
+          <div class="score-bar-track">
+            <div class="score-bar-fill" style="width:${ev.total_score}%"></div>
+          </div>
+          <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:8px;">
+            ATF: ${ev.scores.above_the_fold_lift}/25 • Fiyat: ${ev.scores.pricing_psychology}/20 • Güven: ${ev.scores.trust_and_proof}/20 • Risk: ${ev.scores.risk_reversal}/20 • SB7: ${ev.scores.storybrand_ux}/15
+          </div>
+          <div style="font-size:0.8rem; line-height:1.45;">
+            ${ev.strengths.slice(0, 2).map(s => `<div style="color:var(--mint-fresh)">✅ ${s}</div>`).join('')}
+            ${ev.improvements.slice(0, 2).map(i => `<div style="color:var(--golden-amber)">💡 ${i}</div>`).join('')}
+          </div>
+        </div>
+      `).join('');
     }
 
     async function askAether() {
@@ -666,6 +753,7 @@
     });
 
     loadMemories();
+    runCroBenchmark();
   </script>
 </body>
 </html>

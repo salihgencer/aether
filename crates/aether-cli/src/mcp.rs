@@ -1,11 +1,11 @@
 //! Model Context Protocol (MCP) JSON-RPC 2.0 Stdio Server for Aether.
 //!
-//! Exposes Aether's Gemini 3.8 Flash assistant, Semantic Vector Memory Vault,
-//! Zero-Guilt sanitizer, and Harmonic Audio metadata to any MCP-compatible host.
+//! Exposes Aether's Gemini 3.8 Flash assistant, Competitor CRO Benchmark Engine,
+//! Semantic Vector Memory Vault, Zero-Guilt sanitizer, and Harmonic Audio metadata.
 
 use aether_core::{
-    AetherDesignTokens, AetherPromptRequest, FocusSanctuary, GeminiClient, MemoryVault,
-    ZeroGuiltFilter,
+    AetherDesignTokens, AetherPromptRequest, CroBenchmarkEngine, FocusSanctuary, GeminiClient,
+    MemoryVault, ZeroGuiltFilter,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -34,12 +34,15 @@ pub struct McpServer {
     pub gemini: GeminiClient,
     pub vault: MemoryVault,
     pub sanctuary: FocusSanctuary,
+    pub cro: CroBenchmarkEngine,
 }
 
 impl Default for McpServer {
     fn default() -> Self {
+        let gemini = GeminiClient::default();
         Self {
-            gemini: GeminiClient::default(),
+            cro: CroBenchmarkEngine::new(gemini.clone()),
+            gemini,
             vault: MemoryVault::with_sanctuary_seeds(),
             sanctuary: FocusSanctuary::default(),
         }
@@ -50,7 +53,6 @@ impl McpServer {
     pub async fn handle_request(&mut self, req: JsonRpcRequest) -> Option<JsonRpcResponse> {
         let id = req.id.clone().unwrap_or(Value::Null);
 
-        // Notifications without an id do not expect a response
         if req.method.starts_with("notifications/") {
             return None;
         }
@@ -80,6 +82,16 @@ impl McpServer {
                                 "harmonic_hz": { "type": "number" }
                             },
                             "required": ["prompt"]
+                        }
+                    },
+                    {
+                        "name": "aether_cro_benchmark",
+                        "description": "Evaluates and scores your hosting/landing page against competitors using MECLABS LIFT, CXL, StoryBrand, and SaaS Pricing Psychology.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "my_page_copy": { "type": "string" }
+                            }
                         }
                     },
                     {
@@ -181,6 +193,22 @@ impl McpServer {
                     }]
                 }))
             }
+            "aether_cro_benchmark" => {
+                let mut candidates = CroBenchmarkEngine::default_hosting_candidates();
+                if let Some(custom_copy) = args["my_page_copy"].as_str()
+                    && !custom_copy.trim().is_empty()
+                    && let Some(mine) = candidates.iter_mut().find(|c| c.is_mine)
+                {
+                    mine.page_content = custom_copy.to_string();
+                }
+                let report = self.cro.compare_all(&candidates).await;
+                Ok(json!({
+                    "content": [{
+                        "type": "text",
+                        "text": serde_json::to_string_pretty(&report).unwrap_or_default()
+                    }]
+                }))
+            }
             "aether_memory_search" => {
                 let query = args["query"].as_str().unwrap_or_default();
                 let top_k = args["top_k"].as_u64().unwrap_or(3) as usize;
@@ -279,23 +307,20 @@ mod tests {
             "gemini-3.8-flash"
         );
 
-        let tool_req = JsonRpcRequest {
+        let cro_req = JsonRpcRequest {
             jsonrpc: "2.0".into(),
             id: Some(json!(2)),
             method: "tools/call".into(),
             params: json!({
-                "name": "aether_zero_guilt_sanitize",
-                "arguments": {
-                    "text": "Bugün su içmeyi ihmal ettin ve geç kaldın"
-                }
+                "name": "aether_cro_benchmark",
+                "arguments": {}
             }),
         };
-        let tool_resp = server.handle_request(tool_req).await.unwrap();
-        let text = tool_resp.result.unwrap()["content"][0]["text"]
+        let cro_resp = server.handle_request(cro_req).await.unwrap();
+        let text = cro_resp.result.unwrap()["content"][0]["text"]
             .as_str()
             .unwrap()
             .to_string();
-        assert!(text.contains("dinlenme molası"));
-        assert!(text.contains("tam zamanında buradasın"));
+        assert!(text.contains("Kinsta"));
     }
 }

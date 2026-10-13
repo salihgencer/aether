@@ -3,8 +3,8 @@
 pub mod mcp;
 
 use aether_core::{
-    AetherDesignTokens, AetherPromptRequest, FocusSanctuary, GeminiClient, HarmonicPreset,
-    HarmonicSynthesizer, MemoryVault, ZeroGuiltFilter,
+    AetherDesignTokens, AetherPromptRequest, CroBenchmarkEngine, FocusSanctuary, GeminiClient,
+    HarmonicPreset, HarmonicSynthesizer, MemoryVault, ZeroGuiltFilter,
 };
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
@@ -13,7 +13,7 @@ use std::path::PathBuf;
 #[command(
     name = "aether",
     version,
-    about = "🌌 Aether (AuraMind) — Gemini 3.8 Flash AI Command Center, Vector Memory & Harmonic Sanctuary CLI/MCP"
+    about = "🌌 Aether (AuraMind) — Gemini 3.8 Flash AI Command Center, Competitor CRO Benchmark & Sanctuary CLI/MCP"
 )]
 struct Cli {
     #[command(subcommand)]
@@ -29,6 +29,15 @@ enum Commands {
         /// Optional harmonic resonance frequency (432, 528, 320, 174)
         #[arg(long, default_value_t = 432.0)]
         hz: f32,
+    },
+    /// Benchmark your Hosting / Landing Page against competitors using MECLABS LIFT, CXL & StoryBrand
+    Cro {
+        /// Optional custom landing page copy or description for your site
+        #[arg(long)]
+        my_copy: Option<String>,
+        /// Optional URL for your site
+        #[arg(long)]
+        my_url: Option<String>,
     },
     /// Semantic Vector Memory Vault commands
     Memory {
@@ -97,6 +106,66 @@ async fn main() -> anyhow::Result<()> {
                 "🎵 Harmonik Frekans: {:.0} Hz | 🛡️ Sıfır-Suçluluk Doğrulandı: {}",
                 resp.recommended_frequency_hz, resp.zero_guilt_verified
             );
+        }
+        Commands::Cro { my_copy, my_url } => {
+            let engine = CroBenchmarkEngine::default();
+            let mut candidates = CroBenchmarkEngine::default_hosting_candidates();
+            if let Some(mine) = candidates.iter_mut().find(|c| c.is_mine) {
+                if let Some(copy) = my_copy {
+                    mine.page_content = copy;
+                }
+                if let Some(url) = my_url {
+                    mine.url = url;
+                }
+            }
+
+            let report = engine.compare_all(&candidates).await;
+            println!("╔══════════════════════════════════════════════════════════════════════════════╗");
+            println!("║ 🏆 AETHER CRO & RAKİP HOSTING SAYFASI SKOR TABLOSU (MECLABS • CXL • SB7)     ║");
+            println!("╚══════════════════════════════════════════════════════════════════════════════╝");
+            println!(
+                "{:<4} | {:<44} | {:<6} | {:<5} | {:<5} | {:<5} | {:<5} | {:<5}",
+                "Sıra", "Site / Rakip", "TOPLAM", "ATF25", "FİY20", "GÜV20", "RSK20", "SB15"
+            );
+            println!("{}", "─".repeat(96));
+
+            for (idx, ev) in report.evaluations.iter().enumerate() {
+                let marker = if ev.is_mine { "⭐" } else { "  " };
+                println!(
+                    "{}{}.  | {:<44} | {:>3}/100|  {:>2}   |  {:>2}   |  {:>2}   |  {:>2}   |  {:>2}",
+                    marker,
+                    idx + 1,
+                    ev.name,
+                    ev.total_score,
+                    ev.scores.above_the_fold_lift,
+                    ev.scores.pricing_psychology,
+                    ev.scores.trust_and_proof,
+                    ev.scores.risk_reversal,
+                    ev.scores.storybrand_ux
+                );
+            }
+
+            println!("\n📊 DETAYLI İYİ YANLAR VE GELİŞTİRİLECEK ALANLAR:");
+            for ev in &report.evaluations {
+                println!("\n▸ {} — {}/100 [{}]", ev.name, ev.total_score, ev.grade);
+                for s in &ev.strengths {
+                    println!("   ✅ İyi Yan : {}", s);
+                }
+                for imp in &ev.improvements {
+                    println!("   💡 Geliştir: {}", imp);
+                }
+            }
+
+            println!("\n🚀 SENİN SİTENİ 95+ PUANA TAŞIYACAK 5 ÖNCELİKLİ CRO AKSİYONU (ICE SKORLU):");
+            for item in &report.action_roadmap {
+                println!(
+                    "  • [ICE: {}] {} ({}) -> Beklenen Etki: {}",
+                    item.ice_score, item.title, item.framework, item.expected_uplift
+                );
+                println!("    ↳ {}", item.description);
+            }
+
+            println!("\n🧠 LLM STRATEJİK ÖZET ({}):\n  {}", report.model_used, report.llm_executive_summary);
         }
         Commands::Memory { action } => {
             let mut vault = MemoryVault::with_sanctuary_seeds();
