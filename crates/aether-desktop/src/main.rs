@@ -1,4 +1,4 @@
-//! `aether-desktop` — Tauri v2 / Axum Dark Frosted Glassmorphic Desktop App & IPC Server.
+//! `aether-desktop` — Native macOS Dark Frosted Glassmorphic Desktop App (`NSWindow` + `WKWebView` + `Axum`).
 
 use aether_core::{
     AetherDesignTokens, AetherPromptRequest, CroBenchmarkEngine, CroComparisonReport,
@@ -14,17 +14,21 @@ use axum::{
 };
 use clap::Parser;
 use serde::Deserialize;
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, path::PathBuf, process::Command, sync::Arc};
 use tokio::sync::RwLock;
 
 const INDEX_HTML: &str = include_str!("../ui/index.html");
+const MACOS_SWIFT_SRC: &str = include_str!("../macos_window.swift");
 
 #[derive(Parser, Debug)]
 #[command(name = "aether-desktop", about = "Aether Dark Frosted Glassmorphic Desktop Sanctuary")]
 struct DesktopArgs {
-    /// Port for the local desktop bridge
+    /// Port for the local desktop IPC bridge
     #[arg(long, default_value_t = 4320)]
     port: u16,
+    /// Run only the background server without spawning the native macOS window
+    #[arg(long)]
+    headless: bool,
     /// Print configuration and exit immediately (useful for CI/health checks)
     #[arg(long)]
     check: bool,
@@ -220,6 +224,36 @@ async fn audio_wav_handler(Query(q): Query<WavQuery>) -> impl IntoResponse {
     )
 }
 
+/// Compiles (if needed) and launches the native macOS `NSWindow` + `WKWebView` Dark Frosted Glass host.
+fn launch_native_macos_window(url: &str) -> anyhow::Result<std::process::Child> {
+    let out_dir = std::env::temp_dir().join("aether-native-macos");
+    let cache_dir = out_dir.join("module-cache");
+    std::fs::create_dir_all(&cache_dir)?;
+    let swift_file: PathBuf = out_dir.join("macos_window.swift");
+    let bin_file: PathBuf = out_dir.join("AetherNativeWindow");
+
+    if !bin_file.exists() {
+        std::fs::write(&swift_file, MACOS_SWIFT_SRC)?;
+        let status = Command::new("/usr/bin/swiftc")
+            .arg(&swift_file)
+            .arg("-o")
+            .arg(&bin_file)
+            .arg("-module-cache-path")
+            .arg(&cache_dir)
+            .arg("-framework")
+            .arg("AppKit")
+            .arg("-framework")
+            .arg("WebKit")
+            .status()?;
+        if !status.success() {
+            anyhow::bail!("swiftc failed to compile native macOS window");
+        }
+    }
+
+    let child = Command::new(&bin_file).arg(url).spawn()?;
+    Ok(child)
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = DesktopArgs::parse();
@@ -227,7 +261,7 @@ async fn main() -> anyhow::Result<()> {
 
     if args.check {
         println!(
-            "✅ Aether Desktop hazır • Obsidian: {} • Primary AI: {}",
+            "✅ Aether Native Desktop hazır • Obsidian: {} • Primary AI: {}",
             state.tokens.colors.obsidian_dark, state.tokens.ai_models.primary_model
         );
         return Ok(());
@@ -235,10 +269,30 @@ async fn main() -> anyhow::Result<()> {
 
     let app = build_router(state);
     let addr = SocketAddr::from(([127, 0, 0, 1], args.port));
-    println!("🌌 Aether (AuraMind) Masaüstü Komut Merkezi çalışıyor: http://{}", addr);
+    let url = format!("http://{}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
-    axum::serve(listener, app).await?;
+    println!("🌌 Aether (AuraMind) Native Masaüstü Uygulaması başlatıldı: {}", url);
+
+    if args.headless {
+        axum::serve(listener, app).await?;
+    } else {
+        tokio::spawn(async move {
+            let _ = axum::serve(listener, app).await;
+        });
+
+        match launch_native_macos_window(&url) {
+            Ok(mut child) => {
+                println!("🪟 Native macOS WKWebView Koyu Buzlu Cam Penceresi açıldı (Kapatmak için ⌘Q).");
+                let _ = tokio::task::spawn_blocking(move || child.wait()).await;
+            }
+            Err(err) => {
+                eprintln!("⚠️ Native pencere başlatılamadı ({}), sunucu modunda devam ediliyor: {}", err, url);
+                tokio::signal::ctrl_c().await?;
+            }
+        }
+    }
+
     Ok(())
 }
 
@@ -254,5 +308,7 @@ mod tests {
         assert!(INDEX_HTML.contains("gemini-3.8-flash"));
         assert!(INDEX_HTML.contains("backdrop-filter: blur("));
         assert!(INDEX_HTML.contains("/api/cro/benchmark"));
+        assert!(MACOS_SWIFT_SRC.contains("WKWebView"));
+        assert!(MACOS_SWIFT_SRC.contains("NSVisualEffectView"));
     }
 }
